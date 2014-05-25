@@ -4,12 +4,14 @@
 $Form = $this->Form;
 $Form->InputPrefix = '';
 
+$SearchedCategory=$Form->GetFormValue('CategoryID');
+
 echo  $Form->Open(array('action' => Url('/search'), 'method' => 'get')),
    '<div class="SiteSearch">',
    $Form->TextBox('Search'),
    
    $Form->Label('Category', 'CategoryID'), ' ',
-   $Form->CategoryDropDown('CategoryID', array('Value' => GetValue('CategoryID', $this->Category))).
+   $Form->CategoryDropDown('CategoryID', array('Value' => $SearchedCategory, 'IncludeNull' => true)).
    $Form->Button('Search', array('Name' => '')),
    '</div>',
    $Form->Errors(),
