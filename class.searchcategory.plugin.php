@@ -107,6 +107,8 @@ class SearchCategoryPlugin extends Gdn_Plugin {
     //
     public function SearchController_Render_Before($Sender) {
         
+        $Sender->AddCssFile($this->GetResource('views/dashboard/search/style.css', FALSE, FALSE));
+
         $View = 'dashboard/search/index.php';
         $ThemeView = CombinePaths(array(PATH_THEMES, $Sender->Theme, strtolower($this->GetPluginFolder(false)), $View));
 
