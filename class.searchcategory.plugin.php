@@ -33,7 +33,96 @@ $PluginInfo['SearchCategory'] = array(
 
 class SearchCategoryPlugin extends Gdn_Plugin {
 
+    // Overridden Index method of SearchController.php to retrieve category to search into from the form data
+    // and to call the overridden model's search() function with the added $CategoryFilter variable
+    //
+    public function SearchController_Index_Create($Sender, $Page = '') {
+        $Sender->AddJsFile('search.js');
+        $Sender->Title(T('Search'));
 
+        SaveToConfig('Garden.Format.EmbedSize', '160x90', FALSE);
+
+        list($Offset, $Limit) = OffsetLimit($Page, C('Garden.Search.PerPage', 20));
+        $Sender->SetData('_Limit', $Limit);
+
+        $CategoryToSearch = $Sender->Form->GetFormValue('CategoryID');
+        
+        $Search = $Sender->Form->GetFormValue('Search');
+        $Mode = $Sender->Form->GetFormValue('Mode');
+
+        if ($Mode)
+            $Sender->SearchModel->ForceSearchMode = $Mode;
+       try {
+            $ResultSet = $Sender->SearchModel->Search($Search, $Offset, $Limit, $CategoryToSearch);
+        } catch (Gdn_UserException $Ex) {
+            $Sender->Form->AddError($Ex);
+            $ResultSet = array();
+        } catch (Exception $Ex) {
+            LogException($Ex);
+            $Sender->Form->AddError($Ex);
+            $ResultSet = array();
+        }
+
+        Gdn::UserModel()->JoinUsers($ResultSet, array('UserID'));
+        $Sender->SetData('SearchResults', $ResultSet, TRUE);
+        $Sender->SetData('SearchTerm', Gdn_Format::Text($Search), TRUE);
+        if($ResultSet)
+            $NumResults = count($ResultSet);
+        else
+            $NumResults = 0;
+        
+        if ($NumResults == $Offset + $Limit)
+            $NumResults++;
+
+        // Build a pager
+        $PagerFactory = new Gdn_PagerFactory();
+        $Sender->Pager = $PagerFactory->GetPager('MorePager', $Sender);
+        $Sender->Pager->MoreCode = 'More Results';
+        $Sender->Pager->LessCode = 'Previous Results';
+        $Sender->Pager->ClientID = 'Pager';
+        $Sender->Pager->Configure(
+            $Offset,
+            $Limit,
+            $NumResults,
+            'dashboard/search/%1$s/%2$s/?Search='.Gdn_Format::Url($Search)
+        );
+
+        //      if ($Sender->_DeliveryType != DELIVERY_TYPE_ALL) {
+        //         $Sender->SetJson('LessRow', $Sender->Pager->ToString('less'));
+        //         $Sender->SetJson('MoreRow', $Sender->Pager->ToString('more'));
+        //         $Sender->View = 'results';
+        //      }
+
+        $Sender->CanonicalUrl(Url('search', TRUE));
+
+        $Sender->Render();
+    }
+        
+    // This is needed to override searchmodel.php with local copy
+    public function Gdn_Dispatcher_BeforeDispatch_Handler($Sender) {
+        require_once 'plugins/SearchCategory/class.searchmodel.php';
+    }
+
+    // Intercept render_before to render custom view instead of original forum/search?xx page
+    //
+    public function SearchController_Render_Before($Sender) {
+        
+        $View = 'dashboard/search/index.php';
+        $ThemeView = CombinePaths(array(PATH_THEMES, $Sender->Theme, strtolower($this->GetPluginFolder(false)), $View));
+
+        if (file_exists($ThemeView))
+        {
+            $Sender->View = $ThemeView;
+        } else {
+            $Sender->View = $this->GetView($View);
+        }
+    }
+
+    // Try to inject the search for category filter here (WHERE clause?)
+    //
+    public function SearchModel_Search_Handler($Sender) {
+    
+    }
 }
 
 ?>
