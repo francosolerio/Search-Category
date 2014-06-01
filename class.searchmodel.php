@@ -76,6 +76,37 @@ class SearchModel extends Gdn_Model {
 		$this->_SearchSql = '';
 	}
 	
+   // Converts a Google search phrase such as [eggs bacon "scrambled eggs" -omelette]
+   // into a boolean mode equivalent [+eggs +bacon +"scrambled eggs" -omelette]
+   // Prefixes all terms (words or quoted phrases) with a plus, 
+   // unless they already have a plus or minus prefix.
+   public function ConvertGoogleToBoolean($s) {
+      $inQuotes = false;
+      $nextIsTermStart = true;
+      for ($i = 0; $i < strlen($s); $i++) {
+         $c = substr($s, $i, 1);
+         if (!$inQuotes) {
+            if ($c==' ') {
+               // Term separator
+               $nextIsTermStart = true;
+            } else {
+               // Everything other than space is considered a term character
+               if ($nextIsTermStart) {
+                  // This is the first character in the term, including a quote
+                  if ($c!='+' && $c!='-') {
+                     // Insert s +, unless there is already a + or -
+                     $s = substr($s, 0, $i) . '+' . substr($s, $i);
+                     $i++;
+                  }
+                  $nextIsTermStart = false;
+               }
+            }
+         }
+         if ($c == '"') $inQuotes = !$inQuotes;
+      }
+      return $s;
+   }
+
 	public function Search($Search, $Offset = 0, $Limit = 20, $CategoryFilter = 0) {
       // If there are no searches then return an empty array.
 		if(trim($Search) == '')
@@ -87,6 +118,11 @@ class SearchModel extends Gdn_Model {
       else
          $SearchMode = strtolower(C('Garden.Search.Mode', 'matchboolean'));
       
+      if ($SearchMode == 'google') {
+         $SearchMode = 'boolean';
+         $Search = $this->ConvertGoogleToBoolean($Search);
+      }
+
       if ($SearchMode == 'matchboolean') {
          if (strpos($Search, '+') !== FALSE || strpos($Search, '-') !== FALSE)
             $SearchMode = 'boolean';
