@@ -17,7 +17,7 @@ $PluginInfo['SearchCategory'] = array(
     'Name' => 'Search Category',
     'Description' => 'Filters search by category.',
     'Version' => '1.0',
-    'RequiredApplications' => array('Vanilla' => '2.0.18.8'),
+    'RequiredApplications' => array('Vanilla' => '2.1'),
     'RequiredTheme' => FALSE,
     'RequiredPlugins' => FALSE,
     'MobileFriendly' => TRUE,
@@ -28,7 +28,7 @@ $PluginInfo['SearchCategory'] = array(
     'Author' => "Franco Solerio",
     'AuthorEmail' => 'franco@solerio.net',
     'AuthorUrl' => 'http://digitalia.fm',
-    'License' => 'GPLv3'
+    'License' => 'ApacheV2.0'
 );
 
 class SearchCategoryPlugin extends Gdn_Plugin {
