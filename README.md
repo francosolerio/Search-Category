@@ -13,7 +13,7 @@ This application is licensed under the Apache 2.0 license.
 
 There are two ways to download this application:
 
-1. **[Download the latest stable release](http://vanillaforums.org/addon/mandrillmailer-plugin).**
+1. **[Download the latest stable release](http://vanillaforums.org/addon/searchcategory-plugin).**
 2. Clone the repository into the `plugins` directory of Vanilla.
 
 Once you have added the plugin to your Vanilla installation, you need to activate it in the admin dashboard. The category dropdown selector will appear in the search result page of your forum.
